@@ -1,25 +1,58 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from "react";
+import { nanoid } from "nanoid";
+import NotesList from "./components/NotesList";
+import Search from "./components/Search";
+import Header from "./components/Header";
 
-function App() {
+export default function App() {
+  const [notes, setNotes] = useState(
+    JSON.parse(localStorage.getItem("react-notes-app-data")) || [
+      {
+        key: nanoid(),
+        id: nanoid(),
+        text: "This is sample note.",
+        date: "15/04/2021",
+      },
+    ]
+  );
+
+  const [seachText, setSeachText] = useState("");
+  const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem("react-notes-app-data", JSON.stringify(notes));
+  }, [notes]);
+
+  function addNote(text) {
+    const date = new Date();
+    const newNote = {
+      key: nanoid(),
+      text: text,
+      id: nanoid(),
+      date: date.toLocaleDateString(),
+    };
+    const newNotes = [...notes, newNote];
+    setNotes(newNotes);
+  }
+
+  function deleteNote(id) {
+    const newNotes = notes.filter((note) => note.id !== id);
+    setNotes(newNotes);
+  }
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className={`${darkMode && "dark-mode"}`}>
+      <div className="container">
+        <Header handleDarkMode={setDarkMode} />
+        <Search handleSearchNote={setSeachText} />
+        <NotesList
+          notes={notes.filter((note) =>
+            note.text.toLowerCase().includes(seachText)
+          )}
+          handleAddNote={addNote}
+          deleteNote={deleteNote}
+        />
+      </div>
     </div>
   );
 }
-
-export default App;
